@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.cdnfonts.com/css/star-wars" rel="stylesheet" />
+    <title>Star Ward database</title>
+  </head>
+  <body>
+    <div class="lines">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+
+  <div id="website-container">
+
+    <!-- Header -->
+    <header>
+      <h1>STAR WARS UNIVERSE</h1>
+      <nav>
+        <button>Characters</button>
+        <button>Planets</button>
+        <button>Starships</button>
+      </nav>
+    </header>
+
+    <main>
+        <div class="root"><!-- Dynamic content will be loaded here --></div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        Star wars AB
+    </footer>
+
+  </div>
+
+    <!-- Templates -->
+
+    <!-- Main page -->
+     <div id="mainPageTpl">
+      <div class="container">
+
+      </div>
+     </div>
+     <!-- Characters page -->
+     <div id="charsTpl">
+      <class class="container">
+
+      </class>
+     </div>
+     <!-- Planets page -->
+     <div id="planetsTpl">
+      <class class="container">
+        
+      </class>
+     </div>
+     <!-- Starships page -->
+     <div id="starshipsTpl">
+      <class class="container">
+        
+      </class>
+     </div>
+
+     <!-- Preview of every element template -->
+     <div id="previewCard">
+      <div class="card-container">
+
+      </div>
+     </div>
+
+    <!-- Modal -->
+    <div id="modal">
+        <div class="modal-content"> <!-- Dynamic content will be loaded here --> </div>
+    </div>
+    <script type="module" src="script.ts" defer></script>
+  </body>
+</html>
