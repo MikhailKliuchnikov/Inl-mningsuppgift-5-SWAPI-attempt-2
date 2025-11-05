@@ -88,7 +88,9 @@ main {
 }
 
 #root {
-  border: 1px solid white;
+  border: 1px solid yellow;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(255, 255, 0, 0.2) !important;
   min-height: 70vh;
   width: 100%;
   padding: 20px;
@@ -104,6 +106,7 @@ main {
   height: 100%;
   margin: auto;
   width: 90vw;
+  z-index: -1;
 }
   
 .line {
@@ -170,6 +173,27 @@ footer {
   font-size: 18px;
 }
 
+/* Main header style */
+.main-header {
+  display: flex;
+  justify-content: space-around;
+}
+.main-header input {
+  width: 30em;
+  height: 4.5em;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);;
+  font-size: 14px;
+  font-family: var(--starwarsfont);
+  border: 2px solid yellow;
+  box-shadow: 0 10px 25px rgba(255, 255, 0, 0.2);
+  padding: 1em;
+  border-radius: 16px;
+  transition: ease-in-out 0.5s;
+}
+.main-header input:hover,
+.main-header input:focus {
+  transform: translateY(-5px);
+}
 /* Template styling */
 .container {
   padding: 2rem;
@@ -206,12 +230,14 @@ footer {
   position: relative;
   z-index: 1;
   pointer-events: auto;
+  opacity: 0.8;
 }
 
 .card-container:hover {
   border-color: yellow !important;
   transform: translateY(-5px) !important;
   box-shadow: 0 10px 25px rgba(255, 255, 0, 0.2) !important;
+  opacity: 1;
 }
 
 .card-container h2 {
@@ -260,5 +286,111 @@ footer {
 .navbuttons p {
   color: yellow;
   font-family: var(--starwarsfont);
+  font-size: large;
+}
+
+/* Modal Styling */
+#modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 2px solid yellow;
+  border-radius: 15px;
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  background: linear-gradient(90deg, #333, #444);
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid yellow;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+}
+
+.modal-header h1 {
+  color: yellow;
+  font-family: var(--starwarsfont);
+  font-size: 2rem;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.detail-section {
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border-left: 4px solid yellow;
+}
+
+.detail-section h3 {
+  color: yellow;
+  font-family: var(--starwarsfont);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 8px;
+  border-bottom: 2px solid #333;
+  transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+  border-bottom-color: yellow;
+  transform: translateY(-2px);
+}
+
+.detail-item strong {
+  color: yellow;
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 

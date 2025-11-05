@@ -9,7 +9,7 @@ const mainTpl = document.querySelector('#mainTpl');
 
 // Help with data fetching: Search state parameters
 let searchState = { 
-    searching: "Characters", // ✅ Fixed: removed || operator
+    searching: "Characters",
     charUrl: "https://swapi.dev/api/people",
     planetsUrl: "https://swapi.dev/api/planets",
     starshipsUrl: "https://swapi.dev/api/starships",
@@ -75,6 +75,7 @@ async function fetchData(url) {
     searchState.currentUrl = url;
     searchState.prevPageUrl = data.previous || "";
     searchState.nextPageUrl = data.next || "";
+    searchState.page = extractPageNumber(url);
 
     updatePage();
 }
@@ -98,6 +99,9 @@ function updatePage(){
     ul.appendChild(previewCard);
   })
 
+  const pageNumEl = clone.querySelector(".navbuttons p");
+  pageNumEl.innerHTML = searchState.page;
+
   if(searchState.prevPageUrl === "") prevBtn.disabled = true;
   if(searchState.nextPageUrl === "") nextBtn.disabled = true;
 
@@ -107,9 +111,11 @@ function updatePage(){
   nextBtn.addEventListener("click", () => fetchData(searchState.nextPageUrl))
 
 }
-// Function for updating URL's in search state
-function updateSearchState(currentUrl){
-
+// Extract page number from SWAPI URL
+function extractPageNumber(url) {
+  const urlObj = new URL(url);
+  const pageParam = urlObj.searchParams.get('page');
+  return pageParam ? parseInt(pageParam) : 1;
 }
 
 // ===== WORKING WITH SPECIFIC OBJECTS =====
@@ -118,8 +124,10 @@ function updateSearchState(currentUrl){
 function createPreviewCard(object){
   // Get templates, get their parts
   const clone = document.getElementById("previewCard").content.cloneNode(true);
+  const cardContainer = clone.querySelector(".card-container");
   const header = clone.querySelector("h2");
   const descEl = clone.querySelector("span");
+  
   // Create a special description for appropriate object
   let query = ``;
   if(searchState.searching === "Characters") { 
@@ -141,23 +149,256 @@ function createPreviewCard(object){
     Cost (in credits): ${object.cost_in_credits}
     </p>` 
   }
+  
   // Fill the template with corresponding info
   header.innerHTML = object.name;
   descEl.innerHTML = query;
 
-  // Attach event listener to open detailed info on click
-  clone.addEventListener("click", (e) => {
-    // TODO
-  })
+  // Attach event listener to the card container element
+  cardContainer.addEventListener("click", (e) => {
+    openModal(object);
+  });
 
   return clone;
 }
 
+// ===== MODAL: DETAILED INFO ===== 
+
+function openModal(object) {
+  // Grab important elements
+  const modal = document.getElementById("modal");
+  const modalContent = modal.querySelector(".modal-content");
+
+  // Clear the modal content
+  modalContent.innerHTML = "";
+
+  // Create appropriate detailed query based on object type
+  let detailedContent = "";
+  
+  if(searchState.searching === "Characters"){
+    detailedContent = `
+      <div class="modal-header">
+        <h1>${object.name}</h1>
+      </div>
+      <div class="modal-body">
+        <div class="character-details">
+          <div class="detail-section">
+            <h3>Physical Characteristics</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Height:</strong> ${object.height === "unknown" ? "Unknown" : object.height + " cm"}
+              </div>
+              <div class="detail-item">
+                <strong>Mass:</strong> ${object.mass === "unknown" ? "Unknown" : object.mass + " kg"}
+              </div>
+              <div class="detail-item">
+                <strong>Hair Color:</strong> ${object.hair_color || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Skin Color:</strong> ${object.skin_color || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Eye Color:</strong> ${object.eye_color || "Unknown"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Personal Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Birth Year:</strong> ${object.birth_year || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Gender:</strong> ${object.gender || "Unknown"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Star Wars Universe</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Films Appeared:</strong> ${object.films?.length || 0} film(s)
+              </div>
+              <div class="detail-item">
+                <strong>Vehicles:</strong> ${object.vehicles?.length || 0} vehicle(s)
+              </div>
+              <div class="detail-item">
+                <strong>Starships:</strong> ${object.starships?.length || 0} starship(s)
+              </div>
+              <div class="detail-item">
+                <strong>Species:</strong> ${object.species?.length || 0} species
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if(searchState.searching === "Planets"){
+    detailedContent = `
+      <div class="modal-header">
+        <h1>${object.name}</h1>
+      </div>
+      <div class="modal-body">
+        <div class="planet-details">
+          <div class="detail-section">
+            <h3>Planetary Data</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Rotation Period:</strong> ${object.rotation_period === "unknown" ? "Unknown" : object.rotation_period + " hours"}
+              </div>
+              <div class="detail-item">
+                <strong>Orbital Period:</strong> ${object.orbital_period === "unknown" ? "Unknown" : object.orbital_period + " days"}
+              </div>
+              <div class="detail-item">
+                <strong>Diameter:</strong> ${object.diameter === "unknown" ? "Unknown" : object.diameter + " km"}
+              </div>
+              <div class="detail-item">
+                <strong>Gravity:</strong> ${object.gravity || "Unknown"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Environment</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Climate:</strong> ${object.climate || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Terrain:</strong> ${object.terrain || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Surface Water:</strong> ${object.surface_water === "unknown" ? "Unknown" : object.surface_water + "%"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Population & Culture</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Population:</strong> ${object.population === "unknown" ? "Unknown" : object.population}
+              </div>
+              <div class="detail-item">
+                <strong>Films Featured:</strong> ${object.films?.length || 0} film(s)
+              </div>
+              <div class="detail-item">
+                <strong>Residents:</strong> ${object.residents?.length || 0} known character(s)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if(searchState.searching === "Starships"){
+    detailedContent = `
+      <div class="modal-header">
+        <h1>${object.name}</h1>
+      </div>
+      <div class="modal-body">
+        <div class="starship-details">
+          <div class="detail-section">
+            <h3>Ship Specifications</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Model:</strong> ${object.model || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Manufacturer:</strong> ${object.manufacturer || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Length:</strong> ${object.length === "unknown" ? "Unknown" : object.length + " meters"}
+              </div>
+              <div class="detail-item">
+                <strong>Class:</strong> ${object.starship_class || "Unknown"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Economics & Crew</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Cost:</strong> ${object.cost_in_credits === "unknown" ? "Unknown" : object.cost_in_credits + " credits"}
+              </div>
+              <div class="detail-item">
+                <strong>Crew:</strong> ${object.crew || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Passengers:</strong> ${object.passengers || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Cargo Capacity:</strong> ${object.cargo_capacity === "unknown" ? "Unknown" : object.cargo_capacity + " kg"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Performance</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Max Speed:</strong> ${object.max_atmosphering_speed === "unknown" ? "Unknown" : object.max_atmosphering_speed + " km/h"}
+              </div>
+              <div class="detail-item">
+                <strong>Hyperdrive Rating:</strong> ${object.hyperdrive_rating || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>MGLT:</strong> ${object.MGLT || "Unknown"}
+              </div>
+              <div class="detail-item">
+                <strong>Consumables:</strong> ${object.consumables || "Unknown"}
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h3>Star Wars Universe</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Films Featured:</strong> ${object.films?.length || 0} film(s)
+              </div>
+              <div class="detail-item">
+                <strong>Pilots:</strong> ${object.pilots?.length || 0} known pilot(s)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Fill the modal with content
+  modalContent.innerHTML = detailedContent;
+
+  // Show modal
+  modal.hidden = false;
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden"; // Prevent background scrolling
+}
+
+// Function to close modal
+function closeModal() {
+  const modal = document.getElementById("modal");
+  modal.hidden = true;
+  modal.style.display = "none";
+  document.body.style.overflow = "auto";
+}
+
+// Close modal when clicking outside of it
+document.addEventListener('click', function(event) {
+  const modal = document.getElementById("modal");
+  if (event.target === modal) {
+    closeModal();
+  }
+});
+
+
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
   // Load characters by default
-  if (headerButtons.length > 0) {
     headerButtons[0].classList.add('active');
     fetchData(searchState.charUrl);
-  }
 });
