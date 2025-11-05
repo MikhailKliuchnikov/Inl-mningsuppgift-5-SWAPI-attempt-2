@@ -17,7 +17,10 @@ let searchState = {
     page: 1, 
     currentUrl: "",
     prevPageUrl: "", 
-    nextPageUrl: "" 
+    nextPageUrl: "",
+    searchTerm: "",
+    isSearching: false,
+    allResults: []
 };
 
 // Add click event listeners to each button
@@ -59,12 +62,12 @@ headerButtons.forEach((button, index) => {
   });
 });
 
-
 // ====== FETCHING DATA =======
 
 // Function to fetch data
 async function fetchData(url) { 
-    const res = await fetch(url);
+  try{
+     const res = await fetch(url);
     if (!res.ok) {
         throw new Error(`Det gick inte så bra :( : ${res.status} ${res.statusText}`);
     }
@@ -76,8 +79,19 @@ async function fetchData(url) {
     searchState.prevPageUrl = data.previous || "";
     searchState.nextPageUrl = data.next || "";
     searchState.page = extractPageNumber(url);
+    
+    // Clear search state when fetching new data
+    searchState.searchTerm = "";
+    searchState.isSearching = false;
+    searchState.allResults = [];
 
     updatePage();
+  }
+  catch(error){
+    // Show a clear error message in case of fail
+    root.innerHTML = `<strong>Failed to find any data!</strong>`;
+  }
+   
 }
 
 // Function for updating and rendering page
@@ -91,6 +105,7 @@ function updatePage(){
   const ul = clone.querySelector("ul");
   const prevBtn = clone.querySelector(".navbuttons button:first-child");
   const nextBtn = clone.querySelector(".navbuttons button:last-child");
+  const searchInput = clone.querySelector("[data-search]");
 
   // Fill up the main page 
   header.innerHTML = searchState.searching;
@@ -106,6 +121,12 @@ function updatePage(){
   if(searchState.nextPageUrl === "") nextBtn.disabled = true;
 
   root.appendChild(clone);
+  
+  // Initialize search functionality after elements are loaded
+  if (searchInput) {
+    searchInput.value = searchState.searchTerm;
+    initializeSearch(searchInput);
+  }
   
   prevBtn.addEventListener("click", () => fetchData(searchState.prevPageUrl));
   nextBtn.addEventListener("click", () => fetchData(searchState.nextPageUrl))
@@ -394,7 +415,105 @@ document.addEventListener('click', function(event) {
   }
 });
 
+// ======== SEARCHING FUNCTIONALITY ========
 
+function initializeSearch(searchInputEl) {
+  if (!searchInputEl) return;
+  
+  searchInputEl.addEventListener("input", async (e) => {
+    const searchTerm = e.target.value.trim().toLowerCase();
+    searchState.searchTerm = searchTerm;
+    
+    if (searchTerm === "") {
+      // Reset to original results if search is empty
+      searchState.isSearching = false;
+      await fetchData(getCurrentUrl());
+    } else {
+      // Perform search
+      searchState.isSearching = true;
+      await performSearch(searchTerm);
+    }
+  });
+}
+
+async function performSearch(searchTerm) {
+  try {
+    // Get all data for current category if not already loaded
+    if (searchState.allResults.length === 0) {
+      await fetchAllData();
+    }
+    
+    // Filter results based on search term
+    const filteredResults = searchState.allResults.filter(item => 
+      item.name.toLowerCase().includes(searchTerm)
+    );
+    
+    // Update display with filtered results
+    searchState.results = filteredResults;
+    updateSearchDisplay();
+    
+  } catch (error) {
+    // Show a clear error message in case of fail
+    root.innerHTML = `<strong>Failed to find any data!</strong>`;
+  }
+}
+
+async function fetchAllData() {
+  const baseUrl = getCurrentUrl();
+  const allResults = [];
+  let currentUrl = baseUrl;
+  
+  try {
+    // Fetch all pages for current category
+    while (currentUrl) {
+      const res = await fetch(currentUrl);
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+      
+      const data = await res.json();
+      allResults.push(...data.results);
+      currentUrl = data.next; 
+    }
+    
+    searchState.allResults = allResults;
+  } catch (error) {
+    // Show a clear error message in case of fail
+    root.innerHTML = `<strong>Failed to find any data!</strong>`;
+    searchState.allResults = searchState.results; // Fallback to current results
+  }
+}
+
+function getCurrentUrl() {
+  switch(searchState.searching) {
+    case "Characters": return searchState.charUrl;
+    case "Planets": return searchState.planetsUrl;
+    case "Starships": return searchState.starshipsUrl;
+    default: return searchState.charUrl;
+  }
+}
+
+function updateSearchDisplay() {
+  const ul = document.querySelector(".container ul");
+  ul.innerHTML = "";
+  
+  // Add filtered results
+  searchState.results.forEach((object) => {
+    const previewCard = createPreviewCard(object);
+    ul.appendChild(previewCard);
+  });
+  
+  // Hide pagination when searching
+  const navButtons = document.querySelector(".navbuttons");
+    navButtons.style.display = searchState.isSearching ? "none" : "flex";
+  
+  // Update header to show search status
+  const header = document.querySelector(".container h1");
+  if (header && searchState.isSearching) {
+    const count = searchState.results.length;
+    header.innerHTML = `${searchState.searching} - Found ${count} result${count !== 1 ? 's' : ''}`;
+  } else if (header) {
+    header.innerHTML = searchState.searching;
+  }
+}
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
