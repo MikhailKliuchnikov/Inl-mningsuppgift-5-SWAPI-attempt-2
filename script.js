@@ -106,6 +106,7 @@ function updatePage(){
   const prevBtn = clone.querySelector(".navbuttons button:first-child");
   const nextBtn = clone.querySelector(".navbuttons button:last-child");
   const searchInput = clone.querySelector("[data-search]");
+  searchInput.placeholder = `SEARCH ${searchState.searching} BY NAME`;
 
   // Fill up the main page 
   header.innerHTML = searchState.searching;
@@ -442,7 +443,7 @@ async function performSearch(searchTerm) {
     if (searchState.allResults.length === 0) {
       await fetchAllData();
     }
-    
+
     // Filter results based on search term
     const filteredResults = searchState.allResults.filter(item => 
       item.name.toLowerCase().includes(searchTerm)
